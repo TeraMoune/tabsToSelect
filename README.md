@@ -42,11 +42,11 @@ $('.tts-tabs').tabsToSelect({
     // Добавляет класс клавному контейнеру (в нашем случае .tts-tabs)
     mainWrapperClass: '',
     // Определяет объект которому будет применён цвет фона
-	ObjbgColor: '',
+    ObjbgColor: '',
     // true - Добавляет селект (Подумал, а зачем, не всегда и нужен этот селект)
-	selectEnable: false,
+    selectEnable: false,
     // Если true то цвет изменяет только у border-top стиля, если false то цвет меняет у фона
-	topBorderTabsColor: true,
+    topBorderTabsColor: true,
     onInit: function () {
        // Срабатывает при инициализации плагина
     },
