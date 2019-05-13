@@ -10,7 +10,8 @@
 
 jQuery.fn.extend({
     tabsToSelect: function(options) {
-	var previousResizeWidth = 0;
+	var previousResizeWidth = 0,
+		prevTabs = 0;
 	
     var defaults = {
 		selectCalss: '',
@@ -20,6 +21,9 @@ jQuery.fn.extend({
 		ObjbgColor: '',
 		selectEnable: false,
 		topBorderTabsColor: true,
+		autoOpen: true,
+		lazyAttr: 'data-src',
+		titleClass: 'open',
 		onInit: function () {},
 		beforeTabSwich: function (event) {
 				return true;
@@ -32,11 +36,27 @@ jQuery.fn.extend({
 
     function init(obj)
     {
+
 		$.each(obj, function () {
+
+			var options_attr = $(this).data('params');
+			var object = eval("(" + options_attr + ")");
+			var o = $.extend({}, defaults, object);
+
 			var $tabBlock = $(this),
 				$select = $('<select class="tts-tabs-select ' + o.selectCalss + '" />'),
 				$tabSwitchers = $tabBlock.find('.tts-tabs-switcher'),
-				$selectInner = []; 
+				$selectInner = [];		
+			
+			if(o.lazyAttr) {	
+			$.each($tabBlock.find('.tts-tabs-item'), function (i, tabItem) {
+				var $tabItem = $(tabItem);
+
+				$tabItem.find('img').removeAttr('src');
+                $tabItem.html( $tabItem.html().split(o.lazyAttr+"=").join("src=") );
+				
+			});				
+			}	
 			
 			if(o.selectEnable) {
 			
@@ -65,17 +85,19 @@ jQuery.fn.extend({
 						});
 					}
 			});
+
 			
-			if (o.selectAppendTo) {
-				var $selectAppendTo = $tabBlock.find(o.selectAppendTo);
-				if ($selectAppendTo.length) {
-					$select.appendTo($selectAppendTo);
+			
+				if (o.selectAppendTo) {
+					var $selectAppendTo = $tabBlock.find(o.selectAppendTo);
+					if ($selectAppendTo.length) {
+						$select.appendTo($selectAppendTo);
+					} else {
+						$tabBlock.prepend($select);
+					}
 				} else {
 					$tabBlock.prepend($select);
 				}
-			} else {
-				$tabBlock.prepend($select);
-			}
 
 			}
 			
@@ -83,8 +105,17 @@ jQuery.fn.extend({
 
 			.on('click', '.tts-tabs-switcher:not(.active)', function () {
 					var tab = $(this).index();
+					var tab_o = ( $(this).index() + 1 );
 					var color = $(this).attr('data-color');
-
+	
+					if( prevTabs ) {
+						
+						var or_l = ( tab_o < prevTabs );
+						var or_r = ( tab_o > prevTabs );
+						console.log(or_l+' - '+or_r);
+						prevTabs = tab_o;
+					} else prevTabs = tab_o;
+					
 					$(this).trigger({
 						type: 'tabSwitch',
 						tab: tab,
@@ -113,6 +144,20 @@ jQuery.fn.extend({
 
 						$tabContent.removeClass('active').removeAttr('style');
 						$thisTabContent.addClass('active');
+						
+						if( o.titleClass ) {
+							
+							$tabContent.find('.tts-tabs-title').removeClass(o.titleClass).removeAttr('style');
+							
+							setTimeout(function(){	
+							
+								$thisTabContent.find('.tts-tabs-title').addClass(o.titleClass);
+								setTimeout(function(){
+									$thisTabContent.find('.tts-tabs-title').css({'border-color':'#656565'});
+								},600);
+							},16);
+						
+						}
 						
 						if(	e.color ) {
 							if( o.ObjbgColor ) {
@@ -151,20 +196,31 @@ jQuery.fn.extend({
 			$select.wrap('<div class="tts-tabs-select-wrapper ' + o.selectWrapperCalss + '"></div>');
 			
 			if( o.mainWrapperClass ) $tabBlock.addClass(o.mainWrapperClass);
-			
-			if( $tabBlock.find('.tts-tabs-switcher.active').html() ){
-				var tab = $tabBlock.find('.tts-tabs-switcher.active').index();
-				var color = $tabBlock.find('.tts-tabs-switcher.active').attr('data-color');
-			} else {
-				var tab = $tabBlock.find('.tts-tabs-switcher:eq(0)').index();
-				var color = $tabBlock.find('.tts-tabs-switcher:eq(0)').attr('data-color');
-			}
 
-			$(this).trigger({
-				type: 'tabSwitch',
-				tab: tab,
-				color: color
-			});			
+			if( o.autoOpen ) {
+
+				if( $tabBlock.find('.tts-tabs-switcher.active').html() ) {
+					
+					var tab = $tabBlock.find('.tts-tabs-switcher.active').index();
+					var color = $tabBlock.find('.tts-tabs-switcher.active').attr('data-color');
+					
+				} else {
+
+					var tab = $tabBlock.find('.tts-tabs-switcher:eq(0)').index();
+					var color = $tabBlock.find('.tts-tabs-switcher:eq(0)').attr('data-color');
+					
+				}
+
+				prevTabs = tab;
+				
+				$(this).trigger({
+					type: 'tabSwitch',
+					tab: tab,
+					color: color
+				});
+			
+			}
+	
 		});
 			
 		$(window).on('resize orientationchange', function (event) {
@@ -173,6 +229,18 @@ jQuery.fn.extend({
 			
 		o.onInit.call(obj);
     }
+	
+	// Animate Tab Height
+	function animateTabHeight() {
+
+		// Update Tab Height
+		tabHeight = $('.tts-tabs-item.active').height();
+
+		// Animate Height
+		$('.tabs-content').stop().css({
+			height: tabHeight + 'px'
+		});
+	}	
 
 	function winResize(event) {
 		if (event && (event.type === 'resize' || event.type === 'orientationchange')) {
