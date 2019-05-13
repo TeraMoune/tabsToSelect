@@ -48,11 +48,11 @@ $('.tts-tabs').tabsToSelect({
     // Если true то цвет изменяет только у border-top стиля, если false то цвет меняет у фона
     topBorderTabsColor: true,
     // Если true то активный таб при инициализации будет открыт автоматически
-		  autoOpen: true,
+    autoOpen: true,
     // Сделано для DLE и новой отложенной загрузке (Возвращает указанный аттрибут в нормальный)
-		  lazyAttr: 'data-src',
+    lazyAttr: 'data-src',
     // Добавляет класс на блок с заголовком для эффектов
-		  titleClass: 'open',    
+    titleClass: 'open',    
     onInit: function () {
        // Срабатывает при инициализации плагина
     },
